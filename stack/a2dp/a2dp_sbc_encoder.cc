@@ -48,6 +48,14 @@
 	
 #define A2DP_SBC_48KHZ_BITRATE 496
 
+/*
+ * SBC Dual Channel (SBC HD) 3DH5 bitrates.
+ * 600 kbps @ 48 khz, 551.3 kbps @ 44.1 khz.
+ * Up to 5 frames for 3DH5.
+ */
+#define A2DP_SBC_3DH5_DEFAULT_BITRATE 552
+#define A2DP_SBC_3DH5_48KHZ_BITRATE 601
+
 #define A2DP_SBC_NON_EDR_MAX_RATE 229
 
 #define A2DP_SBC_2DH5_ALT_BITRATE 596
@@ -62,6 +70,13 @@
  * 679 bytes - (4 bytes L2CAP Header + 12 bytes AVDTP Header)
  */
 #define MAX_2MBPS_AVDTP_MTU 663
+
+/*
+ * 3DH5 minimum safe payload size for 4 audio frames of:
+ * 817 bytes - (4 bytes L2CAP Header + 12 bytes AVDTP Header)
+ */
+#define MIN_3MBPS_AVDTP_SAFE_MTU 801
+
 #define A2DP_SBC_MAX_PCM_ITER_NUM_PER_TICK 3
 
 #define A2DP_SBC_MAX_HQ_FRAME_SIZE_44_1 165
@@ -853,6 +868,7 @@ static uint16_t a2dp_sbc_source_rate() {
     rate = A2DP_SBC_48KHZ_BITRATE;
 	
   /* 3DH5 maximum bitrates */
+
   if (a2dp_sbc_encoder_cb.peer_supports_3mbps &&
       a2dp_sbc_encoder_cb.TxAaMtuSize >= MIN_3MBPS_AVDTP_SAFE_MTU) {
     rate = A2DP_SBC_3DH5_DEFAULT_BITRATE;
