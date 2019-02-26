@@ -31,6 +31,7 @@
 #include "embdrv/sbc/encoder/include/sbc_encoder.h"
 #include "osi/include/log.h"
 #include "osi/include/osi.h"
+#include "osi/include/properties.h"
 
 /* Buffer pool */
 #define A2DP_SBC_BUFFER_SIZE BT_DEFAULT_BUFFER_SIZE
@@ -49,6 +50,13 @@
 
 #define A2DP_SBC_NON_EDR_MAX_RATE 229
 
+#define A2DP_SBC_2DH5_ALT_BITRATE 596
+	
+#define A2DP_SBC_2DH5_ALT_48KHZ_BITRATE 649
+	
+	
+// SBC HD alternative bitrate property
+#define A2DP_SBC_HD_PROP "persist.bluetooth.sbc_hd_higher_bitrate"
 /*
  * 2DH5 payload size of:
  * 679 bytes - (4 bytes L2CAP Header + 12 bytes AVDTP Header)
@@ -839,15 +847,39 @@ static uint8_t calculate_max_frames_per_packet(void) {
 }
 
 static uint16_t a2dp_sbc_source_rate() {
-  uint16_t rate = A2DP_SBC_DEFAULT_BITRATE;
 
-  if (a2dp_sbc_encoder_cb.sbc_encoder_params.s16SamplingFreq == SBC_sf48000) {
-    rate = A2DP_SBC_48KHZ_BITRATE;	
-  } else if (!a2dp_sbc_encoder_cb.is_peer_edr) { /* restrict bitrate if a2dp link is non-edr */
+  uint16_t rate = A2DP_SBC_DEFAULT_BITRATE;
+  if (a2dp_sbc_encoder_cb.sbc_encoder_params.s16SamplingFreq == SBC_sf48000)
+    rate = A2DP_SBC_48KHZ_BITRATE;
+	
+  /* 3DH5 maximum bitrates */
+  if (a2dp_sbc_encoder_cb.peer_supports_3mbps &&
+      a2dp_sbc_encoder_cb.TxAaMtuSize >= MIN_3MBPS_AVDTP_SAFE_MTU) {
+    rate = A2DP_SBC_3DH5_DEFAULT_BITRATE;
+    if (a2dp_sbc_encoder_cb.sbc_encoder_params.s16SamplingFreq == SBC_sf48000)
+      rate = A2DP_SBC_3DH5_48KHZ_BITRATE;
+  }
+	
+  /* 2DH5 alternative bitrates */
+	
+  if (!a2dp_sbc_encoder_cb.peer_supports_3mbps &&
+	
+      osi_property_get_int32(A2DP_SBC_HD_PROP, 0)) {
+	
+    rate = A2DP_SBC_2DH5_ALT_BITRATE;
+	
+    if (a2dp_sbc_encoder_cb.sbc_encoder_params.s16SamplingFreq == SBC_sf48000)
+	
+      rate = A2DP_SBC_2DH5_ALT_48KHZ_BITRATE;
+	
+  }
+	
+  /* restrict bitrate if a2dp link is non-edr */
+  if (!a2dp_sbc_encoder_cb.is_peer_edr) {
     rate = A2DP_SBC_NON_EDR_MAX_RATE;
     LOG_VERBOSE(LOG_TAG, "%s: non-edr a2dp sink detected, restrict rate to %d",
                 __func__, rate);
-  }
+	}
 
   return rate;
 }
