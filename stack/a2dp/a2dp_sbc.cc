@@ -864,8 +864,8 @@ A2dpCodecConfigSbcSource::A2dpCodecConfigSbcSource(
   if (a2dp_sbc_source_caps.ch_mode & A2DP_SBC_IE_CH_MD_DUAL) {
     codec_local_capability_.channel_mode |= BTAV_A2DP_CODEC_CHANNEL_MODE_STEREO;
   }
-    if (config_cie.ch_mode & A2DP_SBC_IE_CH_MD_DUAL)	
-    result->channel_mode |= BTAV_A2DP_CODEC_CHANNEL_MODE_DUAL_CHANNEL;
+    if (a2dp_sbc_source_caps.ch_mode & A2DP_SBC_IE_CH_MD_DUAL)	
+    codec_local_capability_.channel_mode |= BTAV_A2DP_CODEC_CHANNEL_MODE_DUAL_CHANNEL;
 }
 
 A2dpCodecConfigSbcSource::~A2dpCodecConfigSbcSource() {}
